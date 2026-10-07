@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <title>Entrar - Controle Financeiro</title>
+    <script src="theme.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="auth.css">
+</head>
+
+<body>
+    <div class="backdrop" aria-hidden="true">
+        <span class="arc-1"></span>
+        <span class="arc-2"></span>
+        <span class="glow glow-1"></span>
+        <span class="glow glow-2"></span>
+    </div>
+
+    <button type="button" class="outline theme-toggle" onclick="toggleTheme()" title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">
+        <svg class="icon when-light"><use href="#i-moon"/></svg>
+        <svg class="icon when-dark"><use href="#i-sun"/></svg>
+    </button>
+
+    <main class="auth-card">
+        <section class="auth-brand">
+            <div class="brand-logo"><svg class="icon"><use href="#i-sprout"/></svg></div>
+            <h1>Controle<br>Financeiro</h1>
+            <p>Organize suas finanças de forma simples, rápida e inteligente.</p>
+            <ul class="features">
+                <li>
+                    <span class="feature-icon"><svg class="icon"><use href="#i-bar-chart"/></svg></span>
+                    <div>
+                        <strong>Controle de gastos</strong>
+                        <span>Registre e categorize suas despesas.</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="feature-icon purple"><svg class="icon"><use href="#i-pie-chart"/></svg></span>
+                    <div>
+                        <strong>Acompanhe suas despesas</strong>
+                        <span>Visualize seus hábitos em tempo real.</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="feature-icon"><svg class="icon"><use href="#i-trending-up"/></svg></span>
+                    <div>
+                        <strong>Tenha visão das suas finanças</strong>
+                        <span>Planeje um futuro mais tranquilo.</span>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <section class="auth-form-panel">
+            <span class="eyebrow">Bem-vindo de volta</span>
+            <h2>Entrar na sua conta</h2>
+            <p class="subtitle">Digite seus dados para continuar</p>
+
+            <form class="auth-form" onsubmit="event.preventDefault(); login()" novalidate>
+                <div class="form-field">
+                    <label for="email">E-mail</label>
+                    <div class="input-wrapper">
+                        <svg class="icon"><use href="#i-mail"/></svg>
+                        <input type="email" name="email" id="email" oninput="onChangeEmail()" placeholder="seuemail@email.com" autocomplete="email">
+                    </div>
+                    <div class="error" id="email-required-error">Informe seu e-mail</div>
+                    <div class="error" id="email-invalid-error">Esse e-mail não parece válido. Confira se tem @ e domínio.</div>
+                </div>
+
+                <div class="form-field">
+                    <label for="password">Senha</label>
+                    <div class="input-wrapper">
+                        <svg class="icon"><use href="#i-lock"/></svg>
+                        <input type="password" name="senha" id="password" oninput="onChangePassword()" placeholder="Digite sua senha" autocomplete="current-password">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility(this)" aria-label="Mostrar senha" title="Mostrar senha">
+                            <svg class="icon"><use href="#i-eye"/></svg>
+                        </button>
+                    </div>
+                    <div class="error" id="required-password">Informe sua senha</div>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox">
+                        <input type="checkbox" id="remember-me" checked>
+                        Lembrar de mim
+                    </label>
+                    <button type="button" class="link-button" id="recovery-pww-button" onclick="recoverPassword()">Esqueci minha senha</button>
+                </div>
+
+                <button type="submit" class="solid submit-button" id="login-button" disabled>
+                    Entrar
+                    <svg class="icon"><use href="#i-arrow-right"/></svg>
+                </button>
+
+                <p class="switch-auth">
+                    Ainda não tem conta?
+                    <button type="button" class="link-button" onclick="register()">Criar conta</button>
+                </p>
+            </form>
+        </section>
+    </main>
+
+    <script src="utils/sprite.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="validations.js"></script>
+    <script src="index.js"></script>
+</body>
+
+</html>

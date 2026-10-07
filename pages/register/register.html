@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <title>Criar conta - Controle Financeiro</title>
+    <script src="../../theme.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="../../global.css">
+    <link rel="stylesheet" href="../../auth.css">
+</head>
+
+<body>
+    <div class="backdrop" aria-hidden="true">
+        <span class="arc-1"></span>
+        <span class="arc-2"></span>
+        <span class="glow glow-1"></span>
+        <span class="glow glow-2"></span>
+    </div>
+
+    <button type="button" class="outline theme-toggle" onclick="toggleTheme()" title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">
+        <svg class="icon when-light"><use href="#i-moon"/></svg>
+        <svg class="icon when-dark"><use href="#i-sun"/></svg>
+    </button>
+
+    <main class="auth-card">
+        <section class="auth-brand">
+            <div class="brand-logo"><svg class="icon"><use href="#i-sprout"/></svg></div>
+            <h1>Controle<br>Financeiro</h1>
+            <p>Organize suas finanças de forma simples, rápida e inteligente.</p>
+            <ul class="features">
+                <li>
+                    <span class="feature-icon"><svg class="icon"><use href="#i-bar-chart"/></svg></span>
+                    <div>
+                        <strong>Controle de gastos</strong>
+                        <span>Registre e categorize suas despesas.</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="feature-icon purple"><svg class="icon"><use href="#i-pie-chart"/></svg></span>
+                    <div>
+                        <strong>Acompanhe suas despesas</strong>
+                        <span>Visualize seus hábitos em tempo real.</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="feature-icon"><svg class="icon"><use href="#i-trending-up"/></svg></span>
+                    <div>
+                        <strong>Tenha visão das suas finanças</strong>
+                        <span>Planeje um futuro mais tranquilo.</span>
+                    </div>
+                </li>
+            </ul>
+        </section>
+
+        <section class="auth-form-panel">
+            <span class="eyebrow">Comece agora</span>
+            <h2>Criar sua conta</h2>
+            <p class="subtitle">Leva menos de um minuto</p>
+
+            <form class="auth-form" onsubmit="event.preventDefault(); register()" novalidate>
+                <div class="form-field">
+                    <label for="name">Nome</label>
+                    <div class="input-wrapper">
+                        <svg class="icon"><use href="#i-user"/></svg>
+                        <input type="text" id="name" oninput="onChangeName()" placeholder="Como quer ser chamado" autocomplete="name">
+                    </div>
+                    <div class="error" id="name-required-error">Informe seu nome</div>
+                </div>
+
+                <div class="form-field">
+                    <label for="email">E-mail</label>
+                    <div class="input-wrapper">
+                        <svg class="icon"><use href="#i-mail"/></svg>
+                        <input type="email" id="email" oninput="onChangeEmail()" placeholder="seuemail@email.com" autocomplete="email">
+                    </div>
+                    <div class="error" id="email-required-error">Informe seu e-mail</div>
+                    <div class="error" id="email-invalid-error">Esse e-mail não parece válido. Confira se tem @ e domínio.</div>
+                </div>
+
+                <div class="form-field">
+                    <label for="password">Senha</label>
+                    <div class="input-wrapper">
+                        <svg class="icon"><use href="#i-lock"/></svg>
+                        <input type="password" id="password" oninput="onChangePassword()" placeholder="Mínimo de 6 caracteres" autocomplete="new-password">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility(this)" aria-label="Mostrar senha" title="Mostrar senha">
+                            <svg class="icon"><use href="#i-eye"/></svg>
+                        </button>
+                    </div>
+                    <div class="error" id="password-required-error">Crie uma senha</div>
+                    <div class="error" id="password-min-length-error">A senha precisa ter pelo menos 6 caracteres</div>
+                </div>
+
+                <div class="form-field">
+                    <label for="confirm-password">Confirmar senha</label>
+                    <div class="input-wrapper">
+                        <svg class="icon"><use href="#i-lock"/></svg>
+                        <input type="password" id="confirm-password" oninput="onChangeConfirmPassword()" placeholder="Repita a senha" autocomplete="new-password">
+                    </div>
+                    <div class="error" id="password-doesnt-match-error">As senhas não são iguais</div>
+                </div>
+
+                <button type="submit" class="solid submit-button" id="register-button" disabled>
+                    Criar conta
+                    <svg class="icon"><use href="#i-arrow-right"/></svg>
+                </button>
+
+                <p class="switch-auth">
+                    Já tem uma conta?
+                    <button type="button" class="link-button" onclick="goToLogin()">Entrar</button>
+                </p>
+            </form>
+        </section>
+    </main>
+
+    <script src="../../utils/sprite.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+    <script src="../../firebase-config.js"></script>
+    <script src="../../validations.js"></script>
+    <script src="register.js"></script>
+</body>
+
+</html>

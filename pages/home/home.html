@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <title>Controle Financeiro</title>
+    <script src="../../theme.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="../../global.css">
+    <link rel="stylesheet" href="home.css">
+</head>
+<body>
+    <div id="loading" class="loading">
+        <div class="brand-mark loading-mark"><svg class="icon"><use href="#i-sprout"/></svg></div>
+        <p id="loading-message">Carregando seus dados…</p>
+        <div id="loading-actions" class="loading-actions" hidden>
+            <button type="button" class="outline" onclick="location.reload()">Tentar novamente</button>
+            <button type="button" class="outline" onclick="logout()">Sair</button>
+        </div>
+    </div>
+
+    <div id="app" hidden>
+        <header>
+            <div class="brand">
+                <div class="brand-mark"><svg class="icon"><use href="#i-sprout"/></svg></div>
+                <div>
+                    <h1>Controle Financeiro</h1>
+                    <small id="greeting"></small>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button type="button" class="outline icon-button" onclick="toggleTheme()" title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">
+                    <svg class="icon when-light"><use href="#i-moon"/></svg>
+                    <svg class="icon when-dark"><use href="#i-sun"/></svg>
+                </button>
+                <button type="button" class="outline logout" onclick="logout()">
+                    <svg class="icon"><use href="#i-log-out"/></svg>
+                    Sair
+                </button>
+            </div>
+        </header>
+
+        <main>
+            <nav class="month-nav">
+                <button type="button" class="outline icon-button" onclick="changeMonth(-1)" title="Mês anterior" aria-label="Mês anterior">
+                    <svg class="icon"><use href="#i-chevron-left"/></svg>
+                </button>
+                <strong id="month-label"></strong>
+                <button type="button" class="outline icon-button" onclick="changeMonth(1)" title="Próximo mês" aria-label="Próximo mês">
+                    <svg class="icon"><use href="#i-chevron-right"/></svg>
+                </button>
+            </nav>
+
+            <section class="summary">
+                <div class="card highlight">
+                    <span>Saldo do mês</span>
+                    <strong id="balance">R$ 0,00</strong>
+                </div>
+                <div class="card">
+                    <span>Receitas</span>
+                    <strong id="total-income" class="income">R$ 0,00</strong>
+                </div>
+                <div class="card">
+                    <span>Despesas</span>
+                    <strong id="total-expense" class="expense">R$ 0,00</strong>
+                </div>
+            </section>
+
+            <ul id="alerts" class="alerts"></ul>
+
+            <div class="columns">
+                <div class="column">
+                    <section class="panel">
+                        <h2 id="form-title">Nova transação</h2>
+                        <form id="transaction-form" onsubmit="saveTransaction(event)" novalidate>
+                            <div class="form-field type-field">
+                                <label><input type="radio" name="type" value="expense" checked> Despesa</label>
+                                <label><input type="radio" name="type" value="income"> Receita</label>
+                            </div>
+                            <div class="form-field">
+                                <div><label for="value"><b>Valor</b></label></div>
+                                <div class="currency-field">
+                                    <span>R$</span>
+                                    <input type="text" id="value" inputmode="numeric" data-currency placeholder="0,00" oninput="onChangeValue()">
+                                </div>
+                                <div class="error" id="value-required-error">Valor obrigatório</div>
+                                <div class="error" id="value-invalid-error">O valor deve ser maior que zero</div>
+                            </div>
+                            <div class="form-field">
+                                <div><label for="date"><b>Data</b></label></div>
+                                <input type="date" id="date" oninput="onChangeDate()">
+                                <div class="error" id="date-required-error">Data obrigatória</div>
+                            </div>
+                            <div class="form-field">
+                                <div><label for="category"><b>Categoria</b></label></div>
+                                <div class="category-row">
+                                    <span id="selected-category-icon"></span>
+                                    <select id="category" onchange="renderSelectedCategoryIcon()"></select>
+                                    <button type="button" class="outline-dark" onclick="openCategoryDialog()" title="Nova categoria">+</button>
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <div><label for="description"><b>Descrição</b></label></div>
+                                <input type="text" id="description" placeholder="Ex.: Mercado">
+                            </div>
+                            <div class="form-field repeat-field" id="repeat-field">
+                                <div><label for="repeat"><b>Repetir</b></label></div>
+                                <div class="repeat-row">
+                                    <select id="repeat" onchange="onChangeRepeat()">
+                                        <option value="none">Não repetir</option>
+                                        <option value="installments">Parcelado (divide o valor)</option>
+                                        <option value="monthly">Todo mês (valor fixo)</option>
+                                    </select>
+                                    <input type="number" id="repeat-count" min="2" max="60" step="1" value="2" oninput="onChangeRepeat()" title="Quantidade de meses">
+                                </div>
+                                <small class="muted" id="repeat-hint"></small>
+                                <div class="error" id="repeat-count-error">Informe de 2 a 60 meses</div>
+                            </div>
+                            <button type="submit" class="solid" id="save-button" disabled>Adicionar</button>
+                            <button type="button" class="clear" id="cancel-edit-button" onclick="cancelEdit()">Cancelar edição</button>
+                        </form>
+                    </section>
+
+                    <section class="panel">
+                        <h2>Transações</h2>
+                        <div class="filters">
+                            <input type="search" id="search" placeholder="Buscar pela descrição" oninput="renderList()">
+                            <select id="filter-type" onchange="renderList()">
+                                <option value="">Todos os tipos</option>
+                                <option value="income">Receitas</option>
+                                <option value="expense">Despesas</option>
+                            </select>
+                            <select id="filter-category" onchange="renderList()"></select>
+                        </div>
+                        <p id="empty-message" class="muted"></p>
+                        <ul id="transactions-list"></ul>
+                    </section>
+                </div>
+
+                <div class="column">
+                    <section class="panel">
+                        <h2>Gastos por categoria</h2>
+                        <p id="category-chart-empty" class="muted">Sem despesas neste mês.</p>
+                        <div class="chart-box" id="category-chart-box">
+                            <canvas id="category-chart" aria-label="Gráfico de gastos por categoria no mês"></canvas>
+                        </div>
+                    </section>
+
+                    <section class="panel">
+                        <h2>Receitas × despesas (últimos 6 meses)</h2>
+                        <div class="chart-box">
+                            <canvas id="history-chart" aria-label="Gráfico de receitas e despesas dos últimos 6 meses"></canvas>
+                        </div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-header">
+                            <h2>Categorias e orçamentos</h2>
+                            <button type="button" class="outline-dark small" onclick="openCategoryDialog()">+ Nova</button>
+                        </div>
+                        <p class="muted hint">Toque no lápis de uma categoria para definir o limite mensal dela.</p>
+                        <ul id="categories-list" class="plain-list"></ul>
+                    </section>
+
+                    <section class="panel">
+                        <h2>Metas de economia</h2>
+                        <form class="goal-form" onsubmit="addGoal(event)" novalidate>
+                            <input type="text" id="goal-name" placeholder="Ex.: Viagem">
+                            <input type="text" id="goal-target" inputmode="numeric" data-currency placeholder="Valor da meta (R$)">
+                            <button type="submit" class="outline-dark">Criar</button>
+                        </form>
+                        <div class="error" id="goal-error"></div>
+                        <p id="goals-empty" class="muted">Nenhuma meta criada.</p>
+                        <ul id="goals-list" class="plain-list"></ul>
+                    </section>
+
+                    <section class="panel">
+                        <h2>Exportar e importar</h2>
+                        <p class="muted hint">A planilha CSV abre no Excel e no Google Planilhas. O backup JSON guarda tudo: transações, categorias e metas.</p>
+                        <div class="backup-actions">
+                            <button type="button" class="outline-dark" onclick="exportCsv()">⬇️ Planilha (CSV)</button>
+                            <button type="button" class="outline-dark" onclick="exportJson()">⬇️ Backup (JSON)</button>
+                            <label class="upload-button outline-dark">
+                                ⬆️ Importar CSV ou JSON
+                                <input type="file" accept=".csv,.json,text/csv,application/json" onchange="importFile(event)" hidden>
+                            </label>
+                        </div>
+                        <p id="backup-message" class="backup-message" hidden></p>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <dialog id="category-dialog">
+        <form id="category-form" onsubmit="saveCategory(event)" novalidate>
+            <h2 id="category-dialog-title">Nova categoria</h2>
+
+            <div class="category-preview-row">
+                <span id="category-preview"></span>
+                <input type="text" id="category-name" placeholder="Nome da categoria" oninput="renderCategoryPreview()">
+            </div>
+
+            <div class="form-field">
+                <b>Imagem</b>
+                <div class="icon-gallery" id="icon-gallery"></div>
+                <label class="upload-button outline-dark">
+                    📷 Enviar imagem própria
+                    <input type="file" accept="image/*" onchange="onUploadCategoryImage(event)" hidden>
+                </label>
+            </div>
+
+            <div class="dialog-row">
+                <div class="form-field">
+                    <div><label for="category-color"><b>Cor</b></label></div>
+                    <input type="color" id="category-color" value="#2a7566" oninput="renderCategoryPreview()">
+                </div>
+                <div class="form-field">
+                    <div><label for="category-budget"><b>Limite mensal (opcional)</b></label></div>
+                    <input type="text" id="category-budget" inputmode="numeric" data-currency placeholder="Sem limite">
+                </div>
+            </div>
+
+            <div class="error" id="category-error"></div>
+
+            <div class="dialog-actions">
+                <button type="button" class="danger" id="delete-category-button" onclick="deleteCategory()">Excluir</button>
+                <button type="button" class="outline-dark" onclick="closeCategoryDialog()">Cancelar</button>
+                <button type="submit" class="primary" id="save-category-button">Salvar</button>
+            </div>
+        </form>
+    </dialog>
+</body>
+
+<script src="../../utils/sprite.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
+<script src="../../firebase-config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<script src="../../services/storage.js"></script>
+<script src="../../utils/format.js"></script>
+<script src="../../utils/icons.js"></script>
+<script src="categories.js"></script>
+<script src="charts.js"></script>
+<script src="goals.js"></script>
+<script src="alerts.js"></script>
+<script src="backup.js"></script>
+<script src="home.js"></script>
+</html>

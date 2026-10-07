@@ -1,0 +1,163 @@
+/* Paleta "Controle Financeiro": verde-petróleo + sálvia, com lilás só nos links.
+   Modo claro: superfícies creme-esverdeadas. Modo escuro: base quase preta esverdeada com detalhes em verde-água. */
+:root {
+        --font: 'Figtree', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+        --bg: #e3ede7;
+        --bg-glow-1: #c6dccf;
+        --bg-glow-2: #f1ece2;
+        --bg-glow-3: #a9cbb8;
+        --on-bg: #12302a;
+        --surface: #fbfaf6;
+        --surface-alt: #eef4f0;
+        --field: #f3f5f2;
+        --text: #12241f;
+        --muted: #5d6f68;
+        --border: #dbe4de;
+        --primary: #1f6b5f;
+        --primary-strong: #165247;
+        --primary-soft: #d9ebe3;
+        --accent: #6a4fc0;
+        --focus: rgba(31, 107, 95, 0.22);
+        --gradient-primary: linear-gradient(90deg, #1b5a50 0%, #2a7566 55%, #8fc1a6 100%);
+        --gradient-brand: linear-gradient(160deg, #3a7b70 0%, #1e5550 40%, #1d4c47 65%, #4f9a7e 100%);
+        --shadow: 0 1px 2px rgba(18, 48, 42, 0.06), 0 8px 24px rgba(18, 48, 42, 0.07);
+        --shadow-strong: 0 30px 80px rgba(16, 52, 44, 0.28);
+        --income: #1d8a4d;
+        --expense: #c8352f;
+        --warning: #9a6200;
+        --warning-bar: #e7a92b;
+        --chart-income: #1789a8;
+        --chart-expense: #e0592a;
+        color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+        --bg: #0a1513;
+        --bg-glow-1: #123a32;
+        --bg-glow-2: #16302b;
+        --bg-glow-3: #0f4a3d;
+        --on-bg: #e2efe9;
+        --surface: #12201d;
+        --surface-alt: #182b27;
+        --field: #0e1a18;
+        --text: #e2efe9;
+        --muted: #8fa7a0;
+        --border: #223a35;
+        --primary: #5fd1b5;
+        --primary-strong: #8fe5cf;
+        --primary-soft: #173a33;
+        --accent: #b9a5ff;
+        --focus: rgba(95, 209, 181, 0.25);
+        --gradient-primary: linear-gradient(90deg, #17574d 0%, #23806d 55%, #4cb898 100%);
+        --gradient-brand: linear-gradient(160deg, #1f5a51 0%, #12342f 45%, #0f2c28 70%, #2f7d66 100%);
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+        --shadow-strong: 0 30px 80px rgba(0, 0, 0, 0.5);
+        --income: #5cc98a;
+        --expense: #ff7a72;
+        --warning: #ffcc4d;
+        --warning-bar: #ffcc4d;
+        --chart-income: #2196b8;
+        --chart-expense: #e8622f;
+        color-scheme: dark;
+}
+
+body {
+        font-family: var(--font);
+        color: var(--text);
+        background:
+                radial-gradient(ellipse 60% 50% at 12% 18%, var(--bg-glow-1) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 45% at 88% 8%, var(--bg-glow-2) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 55% at 85% 95%, var(--bg-glow-3) 0%, transparent 70%),
+                var(--bg);
+        background-attachment: fixed;
+}
+
+button, input, select, textarea {
+        font-family: inherit;
+}
+
+.icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+}
+
+/* Botão de tema: lua no modo claro, sol no escuro */
+:root[data-theme="dark"] .when-light,
+:root:not([data-theme="dark"]) .when-dark {
+        display: none;
+}
+
+.clear {
+        background-color: transparent;
+        border: none;
+        color: var(--on-bg);
+}
+
+.solid {
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+}
+
+.outline {
+        background: color-mix(in srgb, var(--surface) 70%, transparent);
+        color: var(--on-bg);
+        border: 1px solid var(--border);
+}
+
+.link-button {
+        background: none;
+        border: none;
+        padding: 0;
+        width: auto;
+        margin: 0;
+        color: var(--accent);
+        font-weight: 600;
+        cursor: pointer;
+}
+
+.link-button:hover {
+        text-decoration: underline;
+}
+
+.error {
+        color: var(--expense);
+        font-size: 0.85rem;
+        display: none;
+}
+
+button {
+        transition: filter 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+
+button:not([disabled]):hover {
+        filter: brightness(1.05);
+}
+
+button:active {
+        opacity: 0.85;
+}
+
+button[disabled] {
+        opacity: 0.55;
+        cursor: not-allowed;
+}
+
+:focus-visible {
+        outline: 3px solid var(--focus);
+        outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+        * {
+                transition: none !important;
+                animation: none !important;
+        }
+}
