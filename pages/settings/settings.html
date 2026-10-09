@@ -45,6 +45,10 @@
                         <svg class="icon"><use href="#i-shield"/></svg>
                         Segurança e acesso
                     </a>
+                    <a href="#contas" class="nav-item" data-section="contas">
+                        <svg class="icon"><use href="#i-briefcase"/></svg>
+                        Contas profissionais
+                    </a>
                 </nav>
                 <button type="button" class="nav-logout" onclick="logout()">
                     <svg class="icon"><use href="#i-log-out"/></svg>
@@ -210,6 +214,14 @@
                         <p class="muted hint">Depois de confirmar, você tem 5 minutos para fazer outras ações sensíveis sem digitar a senha de novo.</p>
                     </article>
                 </section>
+                <!-- Contas profissionais -->
+                <section id="section-contas" class="settings-section">
+                    <div class="section-title">
+                        <h1>Contas profissionais</h1>
+                        <p>Nome, formas de pagamento e os campos de cada conta. Mudanças valem para os próximos lançamentos; os dados já salvos não se perdem.</p>
+                    </div>
+                    <div id="accounts-settings"></div>
+                </section>
             </main>
         </div>
     </div>
@@ -233,6 +245,26 @@
             <div class="dialog-actions">
                 <button type="button" class="outline-dark" onclick="cancelReauth()">Cancelar</button>
                 <button type="submit" class="primary" id="reauth-button">Confirmar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Exclusão de uma conta profissional -->
+    <dialog id="delete-account-dialog">
+        <form onsubmit="deleteProfessional(event)" novalidate>
+            <h2 class="danger-title">
+                <svg class="icon"><use href="#i-alert"/></svg>
+                Excluir conta profissional
+            </h2>
+            <p>Apaga a conta <strong id="delete-account-name"></strong> com todos os lançamentos, categorias, clientes e metas dela. Sua conta Pessoal não é afetada.</p>
+            <div class="form-field">
+                <label for="delete-account-confirm">Digite o nome da conta para confirmar</label>
+                <input type="text" id="delete-account-confirm" autocomplete="off" oninput="onChangeDeleteAccountConfirm()">
+            </div>
+            <div class="error" id="delete-account-error"></div>
+            <div class="dialog-actions">
+                <button type="button" class="outline-dark" onclick="closeDeleteAccountDialog()">Cancelar</button>
+                <button type="submit" class="danger solid-danger" id="delete-account-button" disabled>Excluir conta</button>
             </div>
         </form>
     </dialog>
@@ -264,9 +296,11 @@
     <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
     <script src="../../firebase-config.js"></script>
+    <script src="../../utils/account-templates.js"></script>
     <script src="../../services/storage.js"></script>
     <script src="../../validations.js"></script>
     <script src="../../utils/image.js"></script>
     <script src="settings.js"></script>
+    <script src="account-settings.js"></script>
 </body>
 </html>

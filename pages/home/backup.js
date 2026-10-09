@@ -1,6 +1,6 @@
 // Exportar (CSV e JSON) e importar dados
 
-const CSV_HEADER = ['Data', 'Tipo', 'Categoria', 'Descrição', 'Valor'];
+const CSV_HEADER = ['Data', 'Tipo', 'Categoria', 'Descrição', 'Valor', 'Forma de pagamento'];
 const TYPE_LABELS = { income: 'Receita', expense: 'Despesa' };
 
 function downloadFile(content, fileName, mimeType) {
@@ -13,7 +13,8 @@ function downloadFile(content, fileName, mimeType) {
 }
 
 function backupFileName(extension) {
-    return `controle-de-gastos-${today()}.${extension}`;
+    const account = getActiveAccount().name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-');
+    return `controle-${account}-${today()}.${extension}`;
 }
 
 // CSV ------------------------------------------------------------------------
@@ -32,7 +33,8 @@ function exportCsv() {
             TYPE_LABELS[transaction.type],
             findCategory(transaction.categoryId).name,
             transaction.description,
-            transaction.value.toFixed(2).replace('.', ',')
+            transaction.value.toFixed(2).replace('.', ','),
+            transaction.paymentMethod || ''
         ]);
 
     const csv = [CSV_HEADER, ...rows].map(row => row.map(toCsvField).join(';')).join('\r\n');
@@ -125,7 +127,8 @@ function readCsvTransactions(text) {
         type: column('tipo'),
         category: column('categ'),
         description: column('descr'),
-        value: column('valor')
+        value: column('valor'),
+        payment: header.findIndex(cell => cell.includes('pagamento'))
     };
     if (columns.date < 0 || columns.value < 0) {
         throw new Error('A planilha precisa ter pelo menos as colunas "Data" e "Valor".');
@@ -168,6 +171,7 @@ function readCsvTransactions(text) {
             value,
             date,
             categoryId: category.id,
+            paymentMethod: (row[columns.payment] || '').trim() || null,
             description: (row[columns.description] || '').trim()
         };
 
@@ -184,7 +188,7 @@ function readCsvTransactions(text) {
     const usedCategories = newCategories.filter(category =>
         transactions.some(transaction => transaction.categoryId === category.id));
 
-    return { transactions, categories: usedCategories, goals: [], errors, duplicates };
+    return { transactions, categories: usedCategories, goals: [], clients: [], errors, duplicates };
 }
 
 function transactionKey(transaction) {
@@ -205,7 +209,8 @@ function exportJson() {
         exportedAt: new Date().toISOString(),
         transactions: state.transactions,
         categories: state.categories,
-        goals: state.goals
+        goals: state.goals,
+        clients: state.clients || []
     };
     downloadFile(JSON.stringify(backup, null, 2), backupFileName('json'), 'application/json');
     showBackupMessage('Backup exportado.');
@@ -227,6 +232,7 @@ function readJsonBackup(text) {
             .map(item => ({ ...item, description: String(item.description || '') })),
         categories: (backup.categories || []).filter(item => item && item.id && item.name),
         goals: (backup.goals || []).filter(item => item && item.id && item.name && item.target > 0),
+        clients: (backup.clients || []).filter(item => item && item.id && item.name),
         errors: []
     };
 }
@@ -253,14 +259,15 @@ async function importFile(event) {
         data.errors.length ? `${plural(data.errors.length, 'linha ignorada', 'linhas ignoradas')} por data ou valor inválido (${data.errors.length === 1 ? 'linha' : 'linhas'} ${data.errors.slice(0, 5).join(', ')}${data.errors.length > 5 ? '…' : ''}).` : ''
     ].filter(Boolean).join(' ');
 
-    if (!data.transactions.length && !data.categories.length && !data.goals.length) {
+    if (!data.transactions.length && !data.categories.length && !data.goals.length && !data.clients.length) {
         return showBackupMessage(`Nada novo para importar. ${notes}`.trim(), !data.duplicates);
     }
 
     const summary = [
         plural(data.transactions.length, 'transação', 'transações'),
         data.categories.length ? plural(data.categories.length, 'categoria', 'categorias') : '',
-        data.goals.length ? plural(data.goals.length, 'meta', 'metas') : ''
+        data.goals.length ? plural(data.goals.length, 'meta', 'metas') : '',
+        data.clients.length ? plural(data.clients.length, (getTerms(getActiveAccount()).client || 'Cliente').toLowerCase(), (getTerms(getActiveAccount()).clientPlural || 'Clientes').toLowerCase()) : ''
     ].filter(Boolean).join(', ');
     if (!confirm(`Importar ${summary}? Itens com o mesmo identificador serão substituídos.`)) {
         return;
@@ -270,6 +277,9 @@ async function importFile(event) {
     try {
         await saveItems('categories', data.categories);
         await saveItems('goals', data.goals);
+        if (data.clients.length) {
+            await saveItems('clients', data.clients);
+        }
         await saveItems('transactions', data.transactions);
     } catch (error) {
         return showBackupMessage('Não foi possível importar. Tente novamente.', true);
@@ -277,6 +287,7 @@ async function importFile(event) {
 
     mergeById('categories', data.categories);
     mergeById('goals', data.goals);
+    mergeById('clients', data.clients);
     mergeById('transactions', data.transactions);
     render();
 

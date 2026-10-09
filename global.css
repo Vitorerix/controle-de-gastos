@@ -77,6 +77,12 @@ button, input, select, textarea {
         font-family: inherit;
 }
 
+/* O atributo hidden sempre esconde, mesmo em elementos que têm display definido no CSS
+   (ex.: botões do cabeçalho com display: flex) */
+[hidden] {
+        display: none !important;
+}
+
 .icon {
         width: 20px;
         height: 20px;

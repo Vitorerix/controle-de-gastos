@@ -36,6 +36,7 @@ async function start(user) {
     renderAccount(user);
     renderSession(user);
     showSection();
+    loadAccountsSettings();
 }
 
 function currentUser() {
@@ -47,7 +48,7 @@ function currentUser() {
 window.addEventListener('hashchange', showSection);
 
 function showSection() {
-    const section = location.hash === '#seguranca' ? 'seguranca' : 'conta';
+    const section = ['#seguranca', '#contas'].includes(location.hash) ? location.hash.slice(1) : 'conta';
     document.querySelectorAll('.settings-section').forEach(element => {
         element.hidden = element.id !== `section-${section}`;
     });

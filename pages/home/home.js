@@ -1,5 +1,5 @@
 // Dados do usuário carregados do Firestore; as telas leem daqui
-const state = { transactions: [], categories: [], goals: [] };
+const state = { transactions: [], categories: [], goals: [], clients: [] };
 
 let editingId = null;
 let currentMonth = today().slice(0, 7);
@@ -20,6 +20,7 @@ async function start() {
     try {
         // Sem conexão (ou com o Firestore desativado) o Firebase fica tentando para sempre,
         // então desistimos depois de um tempo para avisar o usuário
+        await withTimeout(initAccounts(), LOAD_TIMEOUT);
         Object.assign(state, await withTimeout(loadUserData(), LOAD_TIMEOUT));
     } catch (error) {
         page.loadingMessage().textContent =
@@ -54,9 +55,30 @@ function withTimeout(promise, ms) {
     return Promise.race([promise, timeout]);
 }
 
+// Troca de conta: recarrega os dados e limpa filtros e edição da conta anterior
+async function reloadAccountData() {
+    const data = await withTimeout(loadUserData(), LOAD_TIMEOUT);
+    Object.assign(state, data);
+    page.search().value = '';
+    page.filterType().value = '';
+    page.filterCategory().value = '';
+    page.filterGroup().value = '';
+    page.filterStatus().value = '';
+    toggleReports(false);
+    resetForm();
+    render();
+}
+
 function render() {
     page.monthLabel().textContent = formatMonth(currentMonth);
+    renderAccountSwitcher();
+    applyAccountTerms();
+    renderPaymentOptions();
     renderCategoryOptions();
+    renderFilterOptions();
+    renderExtraFields();
+    renderClientsPanel();
+    renderReportsAccess();
     renderSummary(getMonthTransactions());
     renderList();
     renderCategoriesPanel();
@@ -66,6 +88,78 @@ function render() {
 }
 
 document.addEventListener('themechange', render);
+
+// Textos que mudam conforme a conta: "Receitas" na Pessoal, "Faturamento" na profissional
+function applyAccountTerms() {
+    const terms = getTerms(getActiveAccount());
+    const professional = isProfessional();
+
+    page.balanceLabel().textContent = professional ? 'Resultado líquido' : 'Saldo do mês';
+    page.incomeLabel().textContent = professional ? 'Faturamento' : 'Receitas';
+    page.expenseLabel().textContent = professional ? terms.expensePlural : 'Despesas';
+    page.typeIncomeLabel().textContent = terms.income;
+    page.typeExpenseLabel().textContent = terms.expense;
+    page.transactionsTitle().textContent = professional ? 'Lançamentos' : 'Transações';
+    page.filterType().options[1].textContent = terms.incomePlural;
+    page.filterType().options[2].textContent = terms.expensePlural;
+    if (!editingId) {
+        page.formTitle().textContent = newEntryTitle();
+    }
+}
+
+function newEntryTitle() {
+    return isProfessional() ? 'Novo lançamento' : 'Nova transação';
+}
+
+function currentType() {
+    return document.querySelector('input[name="type"]:checked').value;
+}
+
+function onChangeType() {
+    renderCategoryOptions();
+    renderExtraFields();
+    toggleSaveButtonDisable();
+}
+
+// Filtros de clínica/local e de situação só existem nas contas profissionais
+function renderFilterOptions() {
+    const professional = isProfessional();
+    const groupSelect = page.filterGroup();
+    groupSelect.hidden = !professional;
+    page.filterStatus().hidden = !professional;
+    page.filters().classList.toggle('professional', professional);
+    if (!professional) {
+        groupSelect.value = '';
+        page.filterStatus().value = '';
+        return;
+    }
+
+    const terms = getTerms(getActiveAccount());
+    const selected = groupSelect.value;
+    groupSelect.innerHTML = '';
+    groupSelect.appendChild(new Option(`${clientWord('Todas as', 'Todos os')} ${terms.clientPlural.toLowerCase()}`, ''));
+    getGroupOptions().forEach(group => groupSelect.appendChild(new Option(group.name, group.id)));
+    groupSelect.value = [...groupSelect.options].some(option => option.value === selected) ? selected : '';
+}
+
+// Forma de pagamento: opcional na conta Pessoal, sempre preenchida na profissional
+function renderPaymentOptions() {
+    const select = page.paymentMethod();
+    const selected = select.value;
+    const methods = getActiveAccount().paymentMethods || PAYMENT_METHODS;
+    const options = isProfessional() ? methods : ['', ...methods];
+
+    select.innerHTML = '';
+    options.forEach(method => {
+        const option = document.createElement('option');
+        option.value = method;
+        option.textContent = method || 'Não informar';
+        select.appendChild(option);
+    });
+    if (options.includes(selected)) {
+        select.value = selected;
+    }
+}
 
 function getMonthTransactions(month = currentMonth) {
     return state.transactions.filter(transaction => transaction.date.startsWith(month));
@@ -91,6 +185,11 @@ function renderSummary(transactions) {
     page.totalExpense().textContent = formatCurrency(expense);
     page.balance().textContent = formatCurrency(balance);
     page.balance().className = balance < 0 ? 'expense' : 'income';
+
+    const pending = transactions.filter(transaction => transaction.type === 'income' && transaction.status === 'pending');
+    const pendingTotal = pending.reduce((total, transaction) => total + transaction.value, 0);
+    page.incomeNote().hidden = !isProfessional() || !pending.length;
+    page.incomeNote().textContent = `${formatCurrency(pendingTotal)} a receber`;
 }
 
 function sumByType(transactions, type) {
@@ -122,11 +221,15 @@ function filterTransactions(transactions) {
     const search = page.search().value.trim().toLowerCase();
     const type = page.filterType().value;
     const categoryId = page.filterCategory().value;
+    const group = page.filterGroup().value;
+    const status = page.filterStatus().value;
 
     return transactions.filter(transaction =>
         (!type || transaction.type === type) &&
         (!categoryId || transaction.categoryId === categoryId) &&
-        (!search || transaction.description.toLowerCase().includes(search))
+        (!group || (transaction.type === 'income' && getIncomeGroup(transaction).id === group)) &&
+        (!status || (transaction.type === 'income' && (transaction.status || 'received') === status)) &&
+        (!search || searchableText(transaction).includes(search))
     );
 }
 
@@ -139,7 +242,7 @@ function createTransactionItem(transaction) {
     item.innerHTML = `
         <div class="transaction-info">
             <strong></strong>
-            <small>${formatDate(transaction.date)} · <span class="category"></span>${formatRepeat(transaction)}</small>
+            <small>${formatDate(transaction.date)} · <span class="category"></span><span class="details"></span><span class="payment"></span>${formatRepeat(transaction)}${formatStatus(transaction)}</small>
         </div>
         <span class="transaction-value">${sign}${formatCurrency(transaction.value)}</span>
         <div class="transaction-actions">
@@ -149,14 +252,37 @@ function createTransactionItem(transaction) {
     `;
     item.prepend(createCategoryIcon(category));
     // textContent evita que o texto digitado pelo usuário seja interpretado como HTML
-    item.querySelector('strong').textContent = transaction.description || category.name;
+    item.querySelector('strong').textContent = describeTitle(transaction, category);
     item.querySelector('.category').textContent = category.name;
+    const details = describeDetails(transaction);
+    item.querySelector('.details').textContent = details.length ? ` · ${details.join(' · ')}` : '';
+    item.querySelector('.payment').textContent = transaction.paymentMethod ? ` · ${transaction.paymentMethod}` : '';
 
-    const [editButton, deleteButton] = item.querySelectorAll('button');
+    const [editButton, deleteButton] = item.querySelectorAll('.transaction-actions button');
     editButton.onclick = () => startEdit(transaction.id);
     deleteButton.onclick = () => removeTransaction(transaction.id);
 
+    // Comprovante com foto: botão de câmera para ver a imagem
+    const receipt = transaction.details && transaction.details.receipt;
+    if (receipt && receipt.photo) {
+        const photoButton = document.createElement('button');
+        photoButton.type = 'button';
+        photoButton.className = 'clear row-action';
+        photoButton.title = 'Ver foto do comprovante';
+        photoButton.setAttribute('aria-label', photoButton.title);
+        photoButton.innerHTML = '<svg class="icon"><use href="#i-camera"/></svg>';
+        photoButton.onclick = () => openPhoto(receipt.photo);
+        item.querySelector('.transaction-actions').prepend(photoButton);
+    }
+
     return item;
+}
+
+function formatStatus(transaction) {
+    if (!isProfessional() || transaction.type !== 'income' || transaction.status !== 'pending') {
+        return '';
+    }
+    return ' · <span class="status-badge pending">Pendente</span>';
 }
 
 function formatRepeat(transaction) {
@@ -199,7 +325,7 @@ function toggleDateErrors() {
 }
 
 function toggleSaveButtonDisable() {
-    page.saveButton().disabled = !isValueValid() || !isDateValid() || !isRepeatValid();
+    page.saveButton().disabled = !isValueValid() || !isDateValid() || !isRepeatValid() || !isExtraFieldsValid();
 }
 
 function hideFormErrors() {
@@ -214,6 +340,10 @@ async function saveTransaction(event) {
     if (!isValueValid() || !isDateValid()) {
         return;
     }
+    if (!isExtraFieldsValid()) {
+        showExtraFieldErrors();
+        return;
+    }
 
     const transaction = {
         id: editingId || createId(),
@@ -221,8 +351,13 @@ async function saveTransaction(event) {
         value: parseAmount(page.value().value),
         date: page.date().value,
         categoryId: page.category().value,
+        paymentMethod: page.paymentMethod().value || null,
         description: page.description().value.trim()
     };
+    if (isProfessional()) {
+        transaction.details = readExtraFieldValues();
+        transaction.status = readEntryStatus();
+    }
 
     // Ao editar, mantém a informação de parcela/repetição que a transação já tinha
     const original = state.transactions.find(item => item.id === editingId);
@@ -245,7 +380,7 @@ async function saveTransaction(event) {
 
     // Mostra o mês da transação salva, para o usuário ver o resultado
     currentMonth = transaction.date.slice(0, 7);
-    resetForm();
+    resetForm({ keepType: true });
     render();
 }
 
@@ -259,9 +394,12 @@ function startEdit(id) {
     document.querySelector(`input[name="type"][value="${transaction.type}"]`).checked = true;
     page.value().value = formatAmount(transaction.value);
     page.date().value = transaction.date;
+    renderCategoryOptions();
     page.category().value = transaction.categoryId;
+    page.paymentMethod().value = transaction.paymentMethod || (isProfessional() ? page.paymentMethod().options[0].value : '');
     page.description().value = transaction.description;
     renderSelectedCategoryIcon();
+    renderExtraFields(transaction);
 
     // A repetição só existe na criação; ao editar, muda apenas esta transação
     page.repeat().value = 'none';
@@ -269,7 +407,7 @@ function startEdit(id) {
 
     hideFormErrors();
     toggleSaveButtonDisable();
-    page.formTitle().textContent = 'Editar transação';
+    page.formTitle().textContent = isProfessional() ? 'Editar lançamento' : 'Editar transação';
     page.saveButton().textContent = 'Salvar alterações';
     page.cancelEditButton().style.display = 'block';
     page.form().scrollIntoView({ behavior: 'smooth' });
@@ -394,16 +532,27 @@ function addMonthsToDate(date, delta) {
     ].join('-');
 }
 
-function resetForm() {
+// keepType: depois de salvar, continua no mesmo tipo (gasto seguido de gasto).
+// Sem ele (troca de conta, abrir a tela), a conta profissional começa em atendimento.
+function resetForm({ keepType = false } = {}) {
+    const previousType = currentType();
     editingId = null;
     page.form().reset();
+    if (keepType) {
+        document.querySelector(`input[name="type"][value="${previousType}"]`).checked = true;
+    } else if (isProfessional()) {
+        document.querySelector('input[name="type"][value="income"]').checked = true;
+    }
+    renderCategoryOptions();
+    receiptPhotoDraft = null;
+    renderExtraFields({});
     page.date().value = today();
     page.repeatField().style.display = 'block';
     onChangeRepeat();
     renderSelectedCategoryIcon();
     hideFormErrors();
     toggleSaveButtonDisable();
-    page.formTitle().textContent = 'Nova transação';
+    page.formTitle().textContent = newEntryTitle();
     page.saveButton().textContent = 'Adicionar';
     page.cancelEditButton().style.display = 'none';
 }
@@ -426,6 +575,17 @@ const page = {
     loadingActions: () => document.getElementById('loading-actions'),
     app: () => document.getElementById('app'),
     greeting: () => document.getElementById('greeting'),
+    balanceLabel: () => document.getElementById('balance-label'),
+    incomeLabel: () => document.getElementById('income-label'),
+    expenseLabel: () => document.getElementById('expense-label'),
+    typeIncomeLabel: () => document.getElementById('type-income-label'),
+    typeExpenseLabel: () => document.getElementById('type-expense-label'),
+    transactionsTitle: () => document.getElementById('transactions-title'),
+    paymentMethod: () => document.getElementById('payment-method'),
+    incomeNote: () => document.getElementById('income-note'),
+    filters: () => document.querySelector('.filters'),
+    filterGroup: () => document.getElementById('filter-group'),
+    filterStatus: () => document.getElementById('filter-status'),
     profileMark: () => document.getElementById('profile-mark'),
     monthLabel: () => document.getElementById('month-label'),
     form: () => document.getElementById('transaction-form'),

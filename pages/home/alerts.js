@@ -13,6 +13,18 @@ function getAlerts() {
         });
     }
 
+    // Contas profissionais: lembra do que ainda falta receber no mês
+    if (isProfessional()) {
+        const pending = transactions.filter(transaction => transaction.type === 'income' && transaction.status === 'pending');
+        if (pending.length) {
+            const total = pending.reduce((sum, transaction) => sum + transaction.value, 0);
+            alerts.push({
+                level: 'warning',
+                text: `${formatCurrency(total)} a receber em ${pending.length} ${pending.length === 1 ? 'lançamento pendente' : 'lançamentos pendentes'} de ${monthName}. Use o filtro "Só pendentes" ou o Fechamento para cobrar.`
+            });
+        }
+    }
+
     getSortedCategories()
         .filter(category => category.budget)
         .forEach(category => {

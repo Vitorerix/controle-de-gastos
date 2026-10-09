@@ -14,9 +14,12 @@ function getSortedCategories() {
     return [...state.categories].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
 }
 
+// No formulário, contas profissionais mostram só as categorias do tipo escolhido
+// (atendimento ou gasto). Categorias sem "kind" (as da conta Pessoal) servem para os dois.
 function renderCategoryOptions() {
     const categories = getSortedCategories();
-    fillSelect(categoryPage.select(), categories);
+    const type = currentType();
+    fillSelect(categoryPage.select(), categories.filter(category => !category.kind || category.kind === type));
     fillSelect(categoryPage.filter(), [{ id: '', name: 'Todas as categorias' }, ...categories]);
     renderSelectedCategoryIcon();
 }
@@ -96,11 +99,30 @@ function openCategoryDialog(id) {
     categoryPage.color().value = category ? category.color : '#2a7566';
     categoryPage.budget().value = category && category.budget ? formatAmount(category.budget) : '';
     categoryPage.deleteButton().style.display = category ? 'block' : 'none';
+    renderCategoryKindField(category);
     categoryPage.error().style.display = 'none';
 
     renderIconGallery();
     renderCategoryPreview();
     categoryPage.dialog().showModal();
+}
+
+function renderCategoryKindField(category) {
+    const field = categoryPage.kindField();
+    field.hidden = !isProfessional();
+    if (field.hidden) {
+        return;
+    }
+    const terms = getTerms(getActiveAccount());
+    const select = categoryPage.kind();
+    select.innerHTML = '';
+    [['expense', terms.expensePlural], ['income', terms.incomePlural], ['', 'Os dois']].forEach(([value, label]) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        select.appendChild(option);
+    });
+    select.value = category ? (category.kind || '') : currentType();
 }
 
 function closeCategoryDialog() {
@@ -191,6 +213,9 @@ async function saveCategory(event) {
         color: categoryPage.color().value,
         budget: budget || null
     };
+    if (isProfessional()) {
+        category.kind = categoryPage.kind().value || null;
+    }
 
     categoryPage.saveButton().disabled = true;
     try {
@@ -250,5 +275,7 @@ const categoryPage = {
     budget: () => document.getElementById('category-budget'),
     error: () => document.getElementById('category-error'),
     deleteButton: () => document.getElementById('delete-category-button'),
-    saveButton: () => document.getElementById('save-category-button')
+    saveButton: () => document.getElementById('save-category-button'),
+    kindField: () => document.getElementById('category-kind-field'),
+    kind: () => document.getElementById('category-kind')
 }

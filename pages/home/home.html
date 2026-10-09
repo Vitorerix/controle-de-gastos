@@ -31,10 +31,29 @@
                 </a>
                 <div>
                     <h1>Controle Financeiro</h1>
-                    <small id="greeting"></small>
+                    <!-- Troca entre a conta Pessoal e as contas profissionais -->
+                    <div class="account-switcher">
+                        <button type="button" id="account-button" class="account-button" onclick="toggleAccountMenu()" aria-haspopup="menu" aria-expanded="false">
+                            <svg class="icon" id="account-icon"><use href="#i-wallet"/></svg>
+                            <span id="account-name">Pessoal</span>
+                            <svg class="icon chevron"><use href="#i-chevron-down"/></svg>
+                        </button>
+                        <div id="account-menu" class="account-menu" role="menu" hidden>
+                            <small id="greeting" class="account-menu-greeting"></small>
+                            <div id="account-list"></div>
+                            <button type="button" class="account-menu-new" role="menuitem" onclick="openAccountDialog()">
+                                <svg class="icon"><use href="#i-plus"/></svg>
+                                Nova conta profissional
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="header-actions">
+                <button type="button" class="outline reports-button" id="reports-button" onclick="toggleReports()" hidden>
+                    <svg class="icon"><use href="#i-bar-chart"/></svg>
+                    <span class="button-label">Relatórios</span>
+                </button>
                 <a class="outline icon-button header-link" href="../settings/settings.html" title="Configurações da conta" aria-label="Configurações da conta">
                     <svg class="icon"><use href="#i-settings"/></svg>
                 </a>
@@ -62,17 +81,29 @@
 
             <section class="summary">
                 <div class="card highlight">
-                    <span>Saldo do mês</span>
+                    <span id="balance-label">Saldo do mês</span>
                     <strong id="balance">R$ 0,00</strong>
                 </div>
                 <div class="card">
-                    <span>Receitas</span>
+                    <span id="income-label">Receitas</span>
                     <strong id="total-income" class="income">R$ 0,00</strong>
+                    <small id="income-note" class="card-note" hidden></small>
                 </div>
                 <div class="card">
-                    <span>Despesas</span>
+                    <span id="expense-label">Despesas</span>
                     <strong id="total-expense" class="expense">R$ 0,00</strong>
                 </div>
+            </section>
+
+            <section id="reports-view" class="reports-view" hidden>
+                <div class="reports-toolbar no-print">
+                    <div class="report-tabs" role="tablist">
+                        <button type="button" role="tab" class="report-tab" data-report="summary" onclick="showReport('summary')">Resumo mensal</button>
+                        <button type="button" role="tab" class="report-tab" data-report="closing" onclick="showReport('closing')" id="closing-tab">Fechamento</button>
+                    </div>
+                    <button type="button" class="outline-dark small" onclick="toggleReports(false)">Voltar ao painel</button>
+                </div>
+                <div id="report-content" class="panel report"></div>
             </section>
 
             <ul id="alerts" class="alerts"></ul>
@@ -83,8 +114,8 @@
                         <h2 id="form-title">Nova transação</h2>
                         <form id="transaction-form" onsubmit="saveTransaction(event)" novalidate>
                             <div class="form-field type-field">
-                                <label><input type="radio" name="type" value="expense" checked> Despesa</label>
-                                <label><input type="radio" name="type" value="income"> Receita</label>
+                                <label><input type="radio" name="type" value="expense" checked onchange="onChangeType()"> <span id="type-expense-label">Despesa</span></label>
+                                <label><input type="radio" name="type" value="income" onchange="onChangeType()"> <span id="type-income-label">Receita</span></label>
                             </div>
                             <div class="form-field">
                                 <div><label for="value"><b>Valor</b></label></div>
@@ -109,6 +140,12 @@
                                 </div>
                             </div>
                             <div class="form-field">
+                                <div><label for="payment-method"><b>Forma de pagamento</b></label></div>
+                                <select id="payment-method"></select>
+                            </div>
+                            <!-- Campos da conta profissional (montados por fields.js) -->
+                            <div id="extra-fields"></div>
+                            <div class="form-field">
                                 <div><label for="description"><b>Descrição</b></label></div>
                                 <input type="text" id="description" placeholder="Ex.: Mercado">
                             </div>
@@ -131,7 +168,7 @@
                     </section>
 
                     <section class="panel">
-                        <h2>Transações</h2>
+                        <h2 id="transactions-title">Transações</h2>
                         <div class="filters">
                             <input type="search" id="search" placeholder="Buscar pela descrição" oninput="renderList()">
                             <select id="filter-type" onchange="renderList()">
@@ -140,6 +177,12 @@
                                 <option value="expense">Despesas</option>
                             </select>
                             <select id="filter-category" onchange="renderList()"></select>
+                            <select id="filter-group" onchange="renderList()" hidden></select>
+                            <select id="filter-status" onchange="renderList()" hidden>
+                                <option value="">Recebidos e pendentes</option>
+                                <option value="received">Só recebidos</option>
+                                <option value="pending">Só pendentes</option>
+                            </select>
                         </div>
                         <p id="empty-message" class="muted"></p>
                         <ul id="transactions-list"></ul>
@@ -147,6 +190,16 @@
                 </div>
 
                 <div class="column">
+                    <section class="panel" id="clients-panel" hidden>
+                        <div class="panel-header">
+                            <h2 id="clients-title">Clientes</h2>
+                            <button type="button" class="outline-dark small" id="add-client-button" onclick="openClientDialog()">+ Novo</button>
+                        </div>
+                        <p class="muted hint" id="clients-hint"></p>
+                        <ul id="clients-list" class="plain-list"></ul>
+                        <button type="button" class="link-button show-archived" id="show-archived-button" onclick="toggleArchivedClients()" hidden></button>
+                    </section>
+
                     <section class="panel">
                         <h2>Gastos por categoria</h2>
                         <p id="category-chart-empty" class="muted">Sem despesas neste mês.</p>
@@ -230,12 +283,69 @@
                 </div>
             </div>
 
+            <!-- Só nas contas profissionais: separa categorias de atendimentos e de gastos -->
+            <div class="form-field" id="category-kind-field" hidden>
+                <div><label for="category-kind"><b>Usada em</b></label></div>
+                <select id="category-kind"></select>
+            </div>
+
             <div class="error" id="category-error"></div>
 
             <div class="dialog-actions">
                 <button type="button" class="danger" id="delete-category-button" onclick="deleteCategory()">Excluir</button>
                 <button type="button" class="outline-dark" onclick="closeCategoryDialog()">Cancelar</button>
                 <button type="submit" class="primary" id="save-category-button">Salvar</button>
+            </div>
+        </form>
+    </dialog>
+    <!-- Foto do comprovante -->
+    <dialog id="photo-dialog" class="photo-dialog">
+        <form method="dialog">
+            <img id="photo-view" alt="Foto do comprovante">
+            <div class="dialog-actions">
+                <button type="submit" class="outline-dark">Fechar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Nova conta profissional -->
+    <dialog id="account-dialog">
+        <form onsubmit="createAccount(event)" novalidate>
+            <h2>Nova conta profissional</h2>
+            <p class="muted">Fica separada da sua conta Pessoal, com categorias, clientes e relatórios próprios.</p>
+            <div class="form-field">
+                <div><label for="account-name-input"><b>Nome da conta</b></label></div>
+                <input type="text" id="account-name-input" maxlength="40" placeholder="Ex.: Veterinária">
+            </div>
+            <div class="form-field">
+                <b>Modelo</b>
+                <div class="template-options" id="template-options"></div>
+            </div>
+            <div class="error" id="account-error"></div>
+            <div class="dialog-actions">
+                <button type="button" class="outline-dark" onclick="closeAccountDialog()">Cancelar</button>
+                <button type="submit" class="primary" id="create-account-button">Criar conta</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Cliente / pagador (ex.: clínica) -->
+    <dialog id="client-dialog">
+        <form onsubmit="saveClient(event)" novalidate>
+            <h2 id="client-dialog-title">Novo cliente</h2>
+            <div class="form-field">
+                <div><label for="client-name"><b>Nome</b></label></div>
+                <input type="text" id="client-name" maxlength="80">
+            </div>
+            <div class="form-field">
+                <div><label for="client-notes"><b>Observações</b></label></div>
+                <input type="text" id="client-notes" maxlength="200" placeholder="Opcional">
+            </div>
+            <div class="error" id="client-error"></div>
+            <div class="dialog-actions">
+                <button type="button" class="outline-dark" id="archive-client-button" onclick="toggleClientArchived()">Arquivar</button>
+                <button type="button" class="outline-dark" onclick="closeClientDialog()">Cancelar</button>
+                <button type="submit" class="primary">Salvar</button>
             </div>
         </form>
     </dialog>
@@ -248,6 +358,7 @@
 <script src="../../firebase-config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
+<script src="../../utils/account-templates.js"></script>
 <script src="../../services/storage.js"></script>
 <script src="../../utils/format.js"></script>
 <script src="../../utils/icons.js"></script>
@@ -257,5 +368,9 @@
 <script src="goals.js"></script>
 <script src="alerts.js"></script>
 <script src="backup.js"></script>
+<script src="accounts.js"></script>
+<script src="clients.js"></script>
+<script src="fields.js"></script>
+<script src="reports.js"></script>
 <script src="home.js"></script>
 </html>

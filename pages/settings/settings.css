@@ -561,3 +561,142 @@ dialog p {
         font-size: 1.5rem;
     }
 }
+
+/* Contas profissionais */
+a.primary {
+    text-decoration: none;
+}
+
+.account-card h3 {
+    margin: 22px 0 4px;
+    font-size: 1rem;
+}
+
+select {
+    width: 100%;
+    padding: 11px 14px;
+    font: inherit;
+    font-size: 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    background: var(--field);
+    color: var(--text);
+}
+
+.fields-table {
+    display: grid;
+    margin-top: 10px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.fields-row {
+    display: grid;
+    grid-template-columns: 70px minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 0.8fr) 44px;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.fields-row:last-child {
+    border-bottom: none;
+}
+
+.fields-head {
+    background: var(--surface-alt);
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.fields-row input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--primary);
+}
+
+.fields-row input[type="text"] {
+    padding: 8px 10px;
+}
+
+.field-name-cell {
+    display: grid;
+    gap: 6px;
+}
+
+.fields-row .muted {
+    font-size: 0.9rem;
+}
+
+.add-field {
+    margin-top: 14px;
+}
+
+.add-field summary {
+    cursor: pointer;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.add-field-form {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 0 12px;
+    align-items: end;
+    margin-top: 12px;
+    padding: 14px;
+    border-radius: 14px;
+    background: var(--surface-alt);
+}
+
+.add-field-form .new-field-options-wrap {
+    grid-column: 1 / -1;
+}
+
+.add-field-form .new-field-options-wrap[hidden] {
+    display: none;
+}
+
+.add-field-button {
+    grid-column: 1 / -1;
+    justify-self: start;
+}
+
+.account-card-error {
+    margin-top: 12px;
+}
+
+.account-card-actions {
+    margin-top: 18px;
+    justify-content: space-between;
+}
+
+@media (max-width: 640px) {
+    .fields-head {
+        display: none;
+    }
+
+    .fields-row {
+        grid-template-columns: 32px minmax(0, 1fr) 36px;
+    }
+
+    /* No celular, tipo e "usado em" aparecem embaixo do nome */
+    .fields-row > [role="cell"]:nth-child(3),
+    .fields-row > [role="cell"]:nth-child(4) {
+        grid-column: 2;
+        font-size: 0.82rem;
+    }
+
+    .fields-row > [role="cell"]:nth-child(5) {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    .add-field-form {
+        grid-template-columns: 1fr;
+    }
+}

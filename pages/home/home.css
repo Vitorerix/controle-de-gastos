@@ -852,3 +852,654 @@ dialog h2 {
 .profile-mark.has-photo .icon {
     display: none;
 }
+
+/* Seletor de conta (cabeçalho) */
+.account-switcher {
+    position: relative;
+    margin-top: 2px;
+}
+
+.account-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: auto;
+    max-width: 52vw;
+    margin: 0;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    color: var(--on-bg);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.account-button span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.account-button .icon {
+    width: 16px;
+    height: 16px;
+    color: var(--primary);
+}
+
+.account-button .chevron {
+    color: var(--muted);
+}
+
+.account-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 20;
+    width: min(320px, calc(100vw - 32px));
+    padding: 8px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: var(--shadow-strong);
+    display: grid;
+    gap: 2px;
+}
+
+.account-menu[hidden] {
+    display: none;
+}
+
+.account-menu-greeting {
+    padding: 6px 10px 8px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+}
+
+.account-option, .account-menu-new {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin: 0;
+    padding: 10px;
+    border: none;
+    border-radius: 12px;
+    background: none;
+    color: var(--text);
+    text-align: left;
+}
+
+.account-option:hover, .account-menu-new:hover {
+    background: var(--surface-alt);
+}
+
+.account-option > span {
+    flex: 1;
+    min-width: 0;
+}
+
+.account-option strong, .account-option small {
+    display: block;
+}
+
+.account-option small {
+    color: var(--muted);
+}
+
+.account-option .icon {
+    color: var(--primary);
+}
+
+.account-option .check {
+    visibility: hidden;
+}
+
+.account-option[aria-checked="true"] {
+    background: var(--primary-soft);
+}
+
+.account-option[aria-checked="true"] .check {
+    visibility: visible;
+}
+
+.account-menu-new {
+    border-top: 1px solid var(--border);
+    border-radius: 0 0 12px 12px;
+    margin-top: 4px;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* Enquanto troca de conta, a tela fica levemente apagada */
+#app.switching main {
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.15s;
+}
+
+/* Janela de nova conta: modelos como cartões de escolha */
+.template-options {
+    display: grid;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.template-option {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+}
+
+.template-option:has(input:checked) {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+}
+
+.template-option input {
+    width: auto;
+    margin-top: 3px;
+}
+
+.template-option strong, .template-option small {
+    display: block;
+}
+
+.template-option small {
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+#account-dialog p, #client-dialog p {
+    margin-top: 0;
+}
+
+#archive-client-button {
+    margin-right: auto;
+}
+
+/* Clientes / clínicas */
+.client-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.client-item.archived {
+    opacity: 0.6;
+}
+
+.client-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.client-info strong, .client-info small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.client-stats {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.client-stats strong, .client-stats small {
+    display: block;
+}
+
+.empty-row {
+    padding: 6px 0;
+}
+
+.show-archived {
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+/* Campos da conta profissional */
+textarea {
+    width: 100%;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    background: var(--field);
+    color: var(--text);
+    resize: vertical;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px var(--focus);
+}
+
+.extra-field[hidden] {
+    display: none;
+}
+
+.segmented {
+    display: inline-grid;
+    grid-auto-flow: column;
+    margin-top: 6px;
+    padding: 4px;
+    gap: 4px;
+    border-radius: 12px;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+}
+
+.segmented label {
+    padding: 8px 16px;
+    border-radius: 9px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--muted);
+}
+
+.segmented label {
+    position: relative;
+}
+
+/* O rádio fica invisível dentro do rótulo (sem largura, para não alargar a página) */
+.segmented input {
+    position: absolute;
+    inset: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.status-field b {
+    display: block;
+}
+
+.segmented label:has(input:checked) {
+    background: var(--surface);
+    color: var(--primary);
+    box-shadow: var(--shadow);
+}
+
+.segmented label:has(input[value="pending"]:checked) {
+    color: var(--warning);
+}
+
+.segmented label:has(input:focus-visible) {
+    outline: 3px solid var(--focus);
+}
+
+.receipt-control {
+    display: grid;
+    gap: 8px;
+}
+
+.receipt-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.receipt-photo-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.receipt-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.receipt-preview[hidden] {
+    display: none;
+}
+
+.receipt-thumb {
+    width: 48px !important;
+    height: 48px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background-size: cover;
+    background-position: center;
+}
+
+.photo-dialog {
+    width: min(720px, calc(100vw - 32px));
+}
+
+.photo-dialog img {
+    display: block;
+    max-width: 100%;
+    max-height: 70vh;
+    margin: 0 auto;
+    border-radius: 12px;
+}
+
+.status-badge {
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.status-badge.pending {
+    background: color-mix(in srgb, var(--warning-bar) 22%, transparent);
+    color: var(--warning);
+}
+
+.status-badge.received {
+    background: color-mix(in srgb, var(--income) 14%, transparent);
+    color: var(--income);
+}
+
+.pending-text {
+    color: var(--warning);
+}
+
+.card-note {
+    display: block;
+    margin-top: 4px;
+    color: var(--warning);
+    font-weight: 600;
+}
+
+.filters.professional {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.filters.professional #search {
+    grid-column: 1 / -1;
+}
+
+/* Relatórios */
+.reports-button.active {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+#app.reports-open .summary,
+#app.reports-open #alerts,
+#app.reports-open .columns {
+    display: none;
+}
+
+.reports-view {
+    display: grid;
+    gap: 16px;
+}
+
+.reports-view[hidden] {
+    display: none;
+}
+
+.reports-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.report-tabs {
+    display: inline-grid;
+    grid-auto-flow: column;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+.report-tab {
+    width: auto;
+    margin: 0;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 10px;
+    background: none;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.report-tab.active {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.report h3 {
+    margin: 26px 0 10px;
+    font-size: 1.05rem;
+}
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.report-header h2 {
+    margin: 2px 0 4px;
+    font-size: 1.5rem;
+}
+
+.report-header p {
+    margin: 0;
+}
+
+.eyebrow-small {
+    color: var(--primary);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.report-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.report-actions .primary {
+    margin: 0;
+    padding: 8px 14px;
+}
+
+.report-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.report-kpis > div {
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+}
+
+.report-kpis span, .report-kpis small {
+    display: block;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.report-kpis strong {
+    display: block;
+    margin: 4px 0 2px;
+    font-size: 1.35rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.report-kpis .net {
+    background: var(--primary-soft);
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.report-table th, .report-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.report-table th {
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.report-table .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.report-table tfoot td {
+    font-weight: 800;
+    border-bottom: none;
+    border-top: 2px solid var(--border);
+}
+
+.closing-table td:not(.num) {
+    white-space: normal;
+    min-width: 90px;
+}
+
+.report-result {
+    display: flex;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+    padding: 16px;
+    border-radius: 14px;
+    background: var(--surface-alt);
+    font-variant-numeric: tabular-nums;
+}
+
+.report-result strong {
+    font-size: 1.25rem;
+}
+
+.report-footnote {
+    margin: 16px 0 0;
+    font-size: 0.8rem;
+}
+
+.closing-controls {
+    display: grid;
+    gap: 6px;
+    max-width: 360px;
+    margin-top: 16px;
+}
+
+.closing-pending {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--warning-bar) 14%, var(--surface));
+}
+
+@media (max-width: 700px) {
+    .report-kpis {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .filters.professional {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* PDF (impressão): só o relatório, em papel branco */
+@media print {
+    :root, :root[data-theme="dark"] {
+        --surface: #fff;
+        --surface-alt: #f4f6f5;
+        --text: #111;
+        --muted: #555;
+        --border: #ccc;
+        --primary: #1f6b5f;
+        --primary-soft: #e6f0ec;
+        --income: #1d6b3d;
+        --expense: #b3261e;
+        --warning: #8a5a00;
+        color-scheme: light;
+    }
+
+    body {
+        background: #fff !important;
+        padding: 0;
+    }
+
+    header, .month-nav, .no-print, #loading, dialog, svg[style*="display:none"] {
+        display: none !important;
+    }
+
+    .report {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .report-table th, .report-table td {
+        white-space: normal;
+    }
+
+    .report-kpis > div, .report-result {
+        break-inside: avoid;
+    }
+}
+
+/* Itens da grade principal não podem crescer além da tela (tabelas rolam dentro do próprio quadro) */
+main > *, .reports-view > * {
+    min-width: 0;
+}
+
+@media (max-width: 900px) {
+    .reports-button .button-label {
+        display: none;
+    }
+
+    .header-actions .reports-button {
+        padding: 9px;
+    }
+}
