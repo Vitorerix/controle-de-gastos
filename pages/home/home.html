@@ -25,7 +25,10 @@
     <div id="app" hidden>
         <header>
             <div class="brand">
-                <div class="brand-mark"><svg class="icon"><use href="#i-sprout"/></svg></div>
+                <!-- Mostra a foto de perfil quando existe; sem foto, fica a folha da marca -->
+                <a class="brand-mark profile-mark" id="profile-mark" href="../settings/settings.html" title="Minha conta" aria-label="Minha conta">
+                    <svg class="icon"><use href="#i-sprout"/></svg>
+                </a>
                 <div>
                     <h1>Controle Financeiro</h1>
                     <small id="greeting"></small>

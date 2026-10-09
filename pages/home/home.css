@@ -830,3 +830,25 @@ dialog h2 {
         max-width: 40vw;
     }
 }
+
+/* Foto de perfil no lugar da folha; clicar leva para as configurações */
+.profile-mark {
+    text-decoration: none;
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.profile-mark:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px var(--focus), var(--shadow);
+}
+
+.profile-mark.has-photo {
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--primary), var(--shadow);
+}
+
+.profile-mark.has-photo .icon {
+    display: none;
+}

@@ -10,6 +10,7 @@ firebase.auth().onAuthStateChanged(user => {
         return;
     }
     page.greeting().textContent = `Olá, ${user.displayName || user.email}`;
+    loadProfilePhoto();
     start();
 });
 
@@ -31,6 +32,20 @@ async function start() {
     page.app().hidden = false;
     render();
     resetForm();
+}
+
+// A foto não bloqueia a tela: se falhar, o cabeçalho continua com a folha
+async function loadProfilePhoto() {
+    try {
+        const { photo } = await getProfile();
+        if (photo) {
+            const mark = page.profileMark();
+            mark.style.backgroundImage = `url("${photo}")`;
+            mark.classList.add('has-photo');
+        }
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 function withTimeout(promise, ms) {
@@ -411,6 +426,7 @@ const page = {
     loadingActions: () => document.getElementById('loading-actions'),
     app: () => document.getElementById('app'),
     greeting: () => document.getElementById('greeting'),
+    profileMark: () => document.getElementById('profile-mark'),
     monthLabel: () => document.getElementById('month-label'),
     form: () => document.getElementById('transaction-form'),
     formTitle: () => document.getElementById('form-title'),
