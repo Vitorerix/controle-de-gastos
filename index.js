@@ -22,6 +22,12 @@ function login() {
     form.loginButton().disabled = true;
 
     // "Lembrar de mim" desmarcado: a sessão acaba quando o navegador fecha
+    try {
+        // Guardado só para a tela de configurações mostrar como a sessão foi aberta
+        localStorage.setItem("rememberMe", String(form.rememberMe().checked));
+    } catch (error) {
+        // Sem localStorage a informação só não aparece nas configurações
+    }
     const persistence = form.rememberMe().checked
         ? firebase.auth.Auth.Persistence.LOCAL
         : firebase.auth.Auth.Persistence.SESSION;

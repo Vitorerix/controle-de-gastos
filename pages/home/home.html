@@ -32,13 +32,16 @@
                 </div>
             </div>
             <div class="header-actions">
+                <a class="outline icon-button header-link" href="../settings/settings.html" title="Configurações da conta" aria-label="Configurações da conta">
+                    <svg class="icon"><use href="#i-settings"/></svg>
+                </a>
                 <button type="button" class="outline icon-button" onclick="toggleTheme()" title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">
                     <svg class="icon when-light"><use href="#i-moon"/></svg>
                     <svg class="icon when-dark"><use href="#i-sun"/></svg>
                 </button>
-                <button type="button" class="outline logout" onclick="logout()">
+                <button type="button" class="outline logout" onclick="logout()" title="Sair da conta" aria-label="Sair da conta">
                     <svg class="icon"><use href="#i-log-out"/></svg>
-                    Sair
+                    <span class="button-label">Sair</span>
                 </button>
             </div>
         </header>
@@ -245,6 +248,7 @@
 <script src="../../services/storage.js"></script>
 <script src="../../utils/format.js"></script>
 <script src="../../utils/icons.js"></script>
+<script src="../../utils/image.js"></script>
 <script src="categories.js"></script>
 <script src="charts.js"></script>
 <script src="goals.js"></script>

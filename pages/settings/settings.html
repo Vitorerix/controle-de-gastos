@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <title>Configurações - Controle Financeiro</title>
+    <script src="../../theme.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="../../global.css">
+    <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+    <div id="loading" class="loading">Carregando sua conta…</div>
+
+    <div id="app" hidden>
+        <header class="settings-header">
+            <a class="back-link" href="../home/home.html">
+                <svg class="icon"><use href="#i-arrow-left"/></svg>
+                Voltar ao painel
+            </a>
+            <button type="button" class="outline icon-button" onclick="toggleTheme()" title="Alternar tema claro/escuro" aria-label="Alternar tema claro/escuro">
+                <svg class="icon when-light"><use href="#i-moon"/></svg>
+                <svg class="icon when-dark"><use href="#i-sun"/></svg>
+            </button>
+        </header>
+
+        <div class="settings-layout">
+            <aside class="settings-nav">
+                <div class="nav-profile">
+                    <span class="avatar" id="nav-avatar"></span>
+                    <div>
+                        <strong id="nav-name"></strong>
+                        <small id="nav-email"></small>
+                    </div>
+                </div>
+                <nav>
+                    <a href="#conta" class="nav-item" data-section="conta">
+                        <svg class="icon"><use href="#i-user"/></svg>
+                        Minha conta
+                    </a>
+                    <a href="#seguranca" class="nav-item" data-section="seguranca">
+                        <svg class="icon"><use href="#i-shield"/></svg>
+                        Segurança e acesso
+                    </a>
+                </nav>
+                <button type="button" class="nav-logout" onclick="logout()">
+                    <svg class="icon"><use href="#i-log-out"/></svg>
+                    Sair da conta
+                </button>
+            </aside>
+
+            <main class="settings-content">
+                <!-- Minha conta -->
+                <section id="section-conta" class="settings-section">
+                    <div class="section-title">
+                        <h1>Minha conta</h1>
+                        <p>Seu perfil e os dados básicos da conta.</p>
+                    </div>
+
+                    <article class="panel">
+                        <h2>Perfil</h2>
+                        <div class="profile-photo-row">
+                            <span class="avatar big" id="profile-avatar"></span>
+                            <div class="photo-actions">
+                                <label class="button-like outline-dark">
+                                    <svg class="icon"><use href="#i-camera"/></svg>
+                                    Trocar foto
+                                    <input type="file" id="photo-input" accept="image/*" onchange="onChangePhoto(event)" hidden>
+                                </label>
+                                <button type="button" class="link-button danger-link" id="remove-photo-button" onclick="removePhoto()">Remover foto</button>
+                                <small class="muted">JPG ou PNG de até 5 MB. A imagem é recortada em quadrado.</small>
+                            </div>
+                        </div>
+
+                        <form class="inline-form" onsubmit="saveDisplayName(event)" novalidate>
+                            <div class="form-field">
+                                <label for="display-name">Nome de exibição</label>
+                                <input type="text" id="display-name" maxlength="60" autocomplete="name" oninput="onChangeDisplayName()">
+                                <div class="error" id="display-name-error">Informe um nome</div>
+                            </div>
+                            <button type="submit" class="primary" id="save-name-button" disabled>Salvar nome</button>
+                        </form>
+                    </article>
+
+                    <article class="panel">
+                        <h2>Dados da conta</h2>
+                        <dl class="info-list">
+                            <div>
+                                <dt><svg class="icon"><use href="#i-mail"/></svg>E-mail cadastrado</dt>
+                                <dd>
+                                    <span id="account-email"></span>
+                                    <span class="badge" id="email-verified-badge"></span>
+                                    <button type="button" class="link-button" id="send-verification-button" onclick="sendVerification()">Enviar e-mail de verificação</button>
+                                </dd>
+                            </div>
+                            <div>
+                                <dt><svg class="icon"><use href="#i-calendar"/></svg>Conta criada em</dt>
+                                <dd id="account-created"></dd>
+                            </div>
+                        </dl>
+                        <p class="muted hint">Para trocar o e-mail, use <a href="#seguranca">Segurança e acesso</a>.</p>
+                    </article>
+
+                    <article class="panel danger-zone">
+                        <h2>
+                            <svg class="icon"><use href="#i-alert"/></svg>
+                            Excluir conta permanentemente
+                        </h2>
+                        <p>Apaga sua conta e todos os seus dados: transações, categorias, metas e foto. Isso não pode ser desfeito.</p>
+                        <p class="muted hint">Se quiser guardar uma cópia, exporte o backup no painel antes de excluir.</p>
+                        <button type="button" class="danger" onclick="openDeleteDialog()">Excluir minha conta</button>
+                    </article>
+                </section>
+
+                <!-- Segurança e acesso -->
+                <section id="section-seguranca" class="settings-section">
+                    <div class="section-title">
+                        <h1>Segurança e acesso</h1>
+                        <p>Senha, e-mail de acesso e a sessão deste aparelho.</p>
+                    </div>
+
+                    <article class="panel">
+                        <h2>Alterar senha</h2>
+                        <form onsubmit="changePassword(event)" novalidate>
+                            <div class="form-field">
+                                <label for="current-password">Senha atual</label>
+                                <div class="password-field">
+                                    <input type="password" id="current-password" autocomplete="current-password" oninput="onChangePasswordForm()">
+                                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility(this)" aria-label="Mostrar senha" title="Mostrar senha"><svg class="icon"><use href="#i-eye"/></svg></button>
+                                </div>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-field">
+                                    <label for="new-password">Nova senha</label>
+                                    <div class="password-field">
+                                        <input type="password" id="new-password" autocomplete="new-password" placeholder="Mínimo de 6 caracteres" oninput="onChangePasswordForm()">
+                                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility(this)" aria-label="Mostrar senha" title="Mostrar senha"><svg class="icon"><use href="#i-eye"/></svg></button>
+                                    </div>
+                                    <div class="error" id="new-password-error">A nova senha precisa ter pelo menos 6 caracteres</div>
+                                </div>
+                                <div class="form-field">
+                                    <label for="confirm-new-password">Confirmar nova senha</label>
+                                    <input type="password" id="confirm-new-password" autocomplete="new-password" oninput="onChangePasswordForm()">
+                                    <div class="error" id="confirm-password-error">As senhas não são iguais</div>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="primary" id="change-password-button" disabled>Alterar senha</button>
+                                <button type="button" class="link-button" id="reset-password-button" onclick="sendResetEmail()">Esqueci a senha atual: enviar link por e-mail</button>
+                            </div>
+                        </form>
+                    </article>
+
+                    <article class="panel">
+                        <h2>Alterar e-mail de acesso</h2>
+                        <p class="muted hint">Enviamos um link de confirmação para o novo endereço. O e-mail só muda depois que você clicar nele, e aí será preciso entrar de novo.</p>
+                        <form onsubmit="changeEmail(event)" novalidate>
+                            <div class="form-grid">
+                                <div class="form-field">
+                                    <label for="current-email">E-mail atual</label>
+                                    <input type="email" id="current-email" disabled>
+                                </div>
+                                <div class="form-field">
+                                    <label for="new-email">Novo e-mail</label>
+                                    <input type="email" id="new-email" autocomplete="email" placeholder="novo@email.com" oninput="onChangeNewEmail()">
+                                    <div class="error" id="new-email-error"></div>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="primary" id="change-email-button" disabled>Enviar link de confirmação</button>
+                            </div>
+                        </form>
+                    </article>
+
+                    <article class="panel">
+                        <h2>Sessão atual</h2>
+                        <dl class="info-list">
+                            <div>
+                                <dt><svg class="icon"><use href="#i-monitor"/></svg>Aparelho</dt>
+                                <dd id="session-device"></dd>
+                            </div>
+                            <div>
+                                <dt><svg class="icon"><use href="#i-clock"/></svg>Último login</dt>
+                                <dd id="session-last-login"></dd>
+                            </div>
+                            <div>
+                                <dt><svg class="icon"><use href="#i-key"/></svg>Forma de acesso</dt>
+                                <dd id="session-provider"></dd>
+                            </div>
+                            <div>
+                                <dt><svg class="icon"><use href="#i-check"/></svg>Manter conectado</dt>
+                                <dd id="session-remember"></dd>
+                            </div>
+                        </dl>
+                        <button type="button" class="outline-dark" onclick="logout()">
+                            <svg class="icon"><use href="#i-log-out"/></svg>
+                            Sair da conta
+                        </button>
+                    </article>
+
+                    <article class="panel notice">
+                        <h2>
+                            <svg class="icon"><use href="#i-shield"/></svg>
+                            Confirmação para ações sensíveis
+                        </h2>
+                        <p>Para alterar o e-mail, alterar a senha ou excluir a conta, pedimos sua senha de novo, mesmo com você já conectado. Assim ninguém consegue fazer essas mudanças só por pegar seu aparelho desbloqueado.</p>
+                        <p class="muted hint">Depois de confirmar, você tem 5 minutos para fazer outras ações sensíveis sem digitar a senha de novo.</p>
+                    </article>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Confirmação de senha (nova autenticação) -->
+    <dialog id="reauth-dialog">
+        <form onsubmit="submitReauth(event)" novalidate>
+            <h2>
+                <svg class="icon"><use href="#i-lock"/></svg>
+                Confirme sua senha
+            </h2>
+            <p id="reauth-reason" class="muted"></p>
+            <div class="form-field">
+                <label for="reauth-password">Senha</label>
+                <div class="password-field">
+                    <input type="password" id="reauth-password" autocomplete="current-password">
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility(this)" aria-label="Mostrar senha" title="Mostrar senha"><svg class="icon"><use href="#i-eye"/></svg></button>
+                </div>
+                <div class="error" id="reauth-error"></div>
+            </div>
+            <div class="dialog-actions">
+                <button type="button" class="outline-dark" onclick="cancelReauth()">Cancelar</button>
+                <button type="submit" class="primary" id="reauth-button">Confirmar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Exclusão de conta -->
+    <dialog id="delete-dialog">
+        <form onsubmit="deleteAccount(event)" novalidate>
+            <h2 class="danger-title">
+                <svg class="icon"><use href="#i-alert"/></svg>
+                Excluir conta
+            </h2>
+            <p>Todos os seus dados serão apagados para sempre. Para confirmar, digite <strong>EXCLUIR</strong> abaixo.</p>
+            <div class="form-field">
+                <label for="delete-confirm-text">Confirmação</label>
+                <input type="text" id="delete-confirm-text" autocomplete="off" placeholder="EXCLUIR" oninput="onChangeDeleteConfirm()">
+            </div>
+            <div class="error" id="delete-error"></div>
+            <div class="dialog-actions">
+                <button type="button" class="outline-dark" onclick="closeDeleteDialog()">Cancelar</button>
+                <button type="submit" class="danger solid-danger" id="delete-button" disabled>Excluir para sempre</button>
+            </div>
+        </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" hidden></div>
+
+    <script src="../../utils/sprite.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
+    <script src="../../firebase-config.js"></script>
+    <script src="../../services/storage.js"></script>
+    <script src="../../validations.js"></script>
+    <script src="../../utils/image.js"></script>
+    <script src="settings.js"></script>
+</body>
+</html>

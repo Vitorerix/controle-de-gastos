@@ -796,3 +796,37 @@ dialog h2 {
     background: color-mix(in srgb, var(--expense) 12%, transparent);
     color: var(--expense);
 }
+
+/* Link da engrenagem (configurações) com o mesmo formato dos botões do cabeçalho */
+.header-link {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    text-decoration: none;
+}
+
+.header-link:hover .icon {
+    transform: rotate(45deg);
+}
+
+.header-link .icon {
+    transition: transform 0.3s;
+}
+
+@media (max-width: 480px) {
+    .header-actions .button-label {
+        display: none;
+    }
+
+    .header-actions .logout {
+        padding: 9px;
+    }
+
+    #greeting {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 40vw;
+    }
+}

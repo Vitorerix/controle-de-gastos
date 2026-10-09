@@ -70,3 +70,27 @@ async function loadUserData() {
 
     return { transactions, categories, goals };
 }
+
+// Perfil (foto) fica no próprio documento users/{uid}.
+// A foto não vai para o Firebase Auth porque lá só cabe um link, não a imagem.
+function userDoc() {
+    return firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid);
+}
+
+async function getProfile() {
+    const snapshot = await userDoc().get();
+    return snapshot.exists ? snapshot.data() : {};
+}
+
+async function saveProfile(data) {
+    await userDoc().set(data, { merge: true });
+}
+
+// Apaga tudo o que o usuário guardou: transações, categorias, metas e perfil
+async function deleteAllUserData() {
+    for (const collection of ['transactions', 'categories', 'goals']) {
+        const items = await getItems(collection);
+        await removeItems(collection, items.map(item => item.id));
+    }
+    await userDoc().delete();
+}
